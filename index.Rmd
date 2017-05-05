@@ -1,0 +1,121 @@
+---
+title: "Central Limit theorem Simulation for exponential distribution"
+author: "Shashank Sane"
+date: "March 3, 2017"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Synopsis
+
+This article explores exponential distribution and compares the same with central limit theorem.We would be using the R function rexp(n, lambda) to generate random samples of the exponential distribution. We will do 1000 simulations of sample draws of 40 distributions each.
+We would explore how the mean and variance of the samples compare against the theoretical mean and variance.
+
+### 
+load required libraries
+```{r chunk1}
+library(ggplot2)
+library(knitr)
+```
+
+### 
+set lambda for exponential distribution
+```{r chunk2}
+lambda <- 0.2
+
+# Theoretical mean for exponential distribution:
+mean_theoretical <- 1/lambda
+
+# Theoretical variance for exponential distribution:
+var_theoretical <- (1/lambda)^2
+
+```
+
+### 
+Now we will do 1000 simulations of 40 samples generated from exponential distribution. We would use R function rexp() to simulate the draws
+```{r chunk3}
+# Number of simulations
+nosim <- 1000
+
+# Number of samples for each simulation
+n <- 40
+
+#set seed for random sampling
+set.seed(0)
+
+# Generate random samples and store in matrix sim.mat
+sim.mat <- sim.mat <- matrix(rexp(n*nosim,rate=lambda),nosim)
+
+```
+
+### 
+Now we will find out the mean for each simulation and store them in list mean_dist
+
+### 
+we will also find out the variance for each simulation and also store them in list var_dist
+```{r chunk4}
+# sample mean distribution list
+mean_dist <- apply(sim.mat,1,mean)
+
+# sample variance distribution list
+var_dist <- apply(sim.mat,1,var)
+
+```
+
+### 
+find out sample mean(mean of the list of sample means) and the sample variance(mean of the list of sample variance) and compare them to the theoretical mean and theoretical variance.
+```{r chunk5}
+
+# sample mean
+mean_sample <- mean(mean_dist)
+
+# sample variance
+var_sample <- mean(var_dist)
+
+```
+
+### 
+Comparison with theoretical mean and theoretical variance, **sample mean** = `r mean_sample` and the **theoretical mean** = `r mean_theoretical` while **sample variance** = `r var_sample` and the **theoretical variance** = `r var_theoretical`
+
+###
+*As can be seen from above they are pretty close!!*
+
+### 
+We will check the distribution of mean for the samples drawn. Note that the Central Limit Theorum states that for large sample size the averages are approximately normal and centered around population mean.
+
+### 
+But first we will look at how a distribution of 1000 simulations from exponential distribution looks like:
+```{r chunk6}
+
+# generate 1000 random sample draws of exponential distribution and store them in data frame dfSample
+dfsample <- as.data.frame(rexp(1000,rate=lambda))
+names(dfsample)<- c("RV")
+
+# Draw histogram to view the sample draw distribution
+ggplot(data=dfsample)+geom_histogram(mapping=aes(x=dfsample$RV,y=..density..),binwidth = 0.5,fill="blue",col="black")+xlab("sample draws")+ggtitle("sample distribution of simulation data")
+
+```
+
+### 
+Now draw the distribution of sample means for 1000 simulations. We would also overlay normal curve to visualize how the distribution approximates to normal distribution.
+```{r chunk7}
+
+# Convert mean_dist to dataframe so as to use in ggplot
+mean_dist <- as.data.frame(mean_dist)
+
+# draw the plot for sample mean distribution
+a  <- ggplot(data=mean_dist)+geom_histogram(mapping=aes(x=mean_dist,y=..density..),binwidth = 0.15,fill="green",col="black")
+
+# add density curve
+a + stat_function(fun=dnorm,args=list(mean=mean(mean_dist$mean_dist),sd=sd(mean_dist$mean_dist)),col="red",lwd=2)+xlab("sample means")+ylab("density")+ggtitle("Sample Mean Distribution for 1000 simulations")
+
+
+```
+
+### 
+*As can be seen from above figure the sample mean distribution fits nicely for normal distribution centered around theroretical mean `r mean_theoretical` as predicted by Central Limit Theorem!!!.*
